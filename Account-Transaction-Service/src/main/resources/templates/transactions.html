@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Transaction Service</title>
+    <script>
+        function validateForm() {
+            let amount = document.getElementById("amount").value;
+            if (amount <= 0) {
+                alert("Amount must be greater than zero!");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <h2>Transaction Service</h2>
+
+    <!-- Form to Submit Transactions -->
+    <form action="/process" method="post" onsubmit="return validateForm()">
+        <label>User ID:</label>
+        <input type="text" name="userId" required>
+        <label>Amount:</label>
+        <input type="number" id="amount" name="amount" required>
+        <label>Type:</label>
+        <select name="type">
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Display Transactions -->
+    <h3>Transaction History</h3>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Amount</th>
+            <th>Type</th>
+        </tr>
+        <tr th:each="transaction : ${transactions}">
+            <td th:text="${transaction.id}"></td>
+            <td th:text="${transaction.userId}"></td>
+            <td th:text="${transaction.amount}"></td>
+            <td th:text="${transaction.type}"></td>
+        </tr>
+    </table>
+</body>
+</html>
