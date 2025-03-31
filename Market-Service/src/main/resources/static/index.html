@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Service UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .order-form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Market Order Service</h1>
+
+        <div class="order-form">
+            <h2>Create a New Order</h2>
+            <form id="orderForm">
+                <label for="stockSymbol">Stock Symbol:</label>
+                <input type="text" id="stockSymbol" name="stockSymbol" required>
+
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" required>
+
+                <label for="price">Price:</label>
+                <input type="number" id="price" name="price" required>
+
+                <button type="submit">Submit Order</button>
+            </form>
+        </div>
+
+        <div class="order-list">
+            <h2>All Orders</h2>
+            <table id="orderTable">
+                <thead>
+                    <tr>
+                        <th>Stock Symbol</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Orders will be displayed here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const orderForm = document.getElementById('orderForm');
+            const orderTable = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
+
+            // Submit form to create a new order
+            orderForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const stockSymbol = document.getElementById('stockSymbol').value;
+                const quantity = document.getElementById('quantity').value;
+                const price = document.getElementById('price').value;
+
+                const order = {
+                    stockSymbol,
+                    quantity: parseInt(quantity),
+                    price: parseFloat(price),
+                    status: 'Pending'
+                };
+
+                try {
+                    const response = await fetch('http://localhost:8082/market', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(order)
+                    });
+
+                    const data = await response.json();
+                    addOrderToTable(data);
+                    orderForm.reset();
+                } catch (error) {
+                    console.error('Error creating order:', error);
+                }
+            });
+
+            // Fetch all orders from the backend and display in the table
+            async function fetchOrders() {
+                try {
+                    const response = await fetch('http://localhost:8082/market');
+                    const orders = await response.json();
+
+                    orders.forEach(order => {
+                        addOrderToTable(order);
+                    });
+                } catch (error) {
+                    console.error('Error fetching orders:', error);
+                }
+            }
+
+            // Add an order to the table
+            function addOrderToTable(order) {
+                const row = orderTable.insertRow();
+                row.innerHTML = `
+                    <td>${order.stockSymbol}</td>
+                    <td>${order.quantity}</td>
+                    <td>${order.price}</td>
+                    <td>${order.status}</td>
+                `;
+            }
+
+            // Initial fetch of orders when the page loads
+            fetchOrders();
+        });
+    </script>
+</body>
+</html>
